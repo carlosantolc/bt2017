@@ -9,23 +9,18 @@
 
 using namespace std;
 
-/*typedef struct{
-	int tiempo;
-	std::vector<int> tareas;
-	std::vector<int> maquinas;
-}solucion;*/
+const int SIZE = 10;
+int amistad[SIZE][SIZE] = {};
+int trabajo[SIZE][SIZE] = {};
 
-bool permutar;
 vector<int> permutaciones;
 
 void generar(int nivel, int s[]) {
 	
-	if (permutar == true) {
+	if (s[nivel-1] != -1) {
 		std::next_permutation(permutaciones.begin(), permutaciones.end());
 	}
-	s[nivel-1] = permutaciones.front();
-	permutaciones.erase(permutaciones.begin());
-	cout << permutaciones.size() << " " << s[nivel-1] <<  endl;
+	s[nivel-1] = permutaciones.at(nivel-1);
 }
 
 bool solucion(int nivel, int alumnos) {
@@ -44,16 +39,9 @@ bool criterio(int nivel, int alumnos) {
 
 bool masHermanos(int nivel, int alumnos, int s[]) {
 	if (nivel != alumnos) {
-		bool existe = false;
-		permutaciones.insert(permutaciones.begin(), s[nivel-1]);
-		cout << permutaciones.size() << endl;
-		for (size_t i = 0; i < permutaciones.size(); ++i)
-		{
-			if(permutaciones.at(i) > s[nivel-1]) {
-				existe = true;
-			}
+		if(s[nivel-1] < permutaciones.at(nivel)) {
+			return true;
 		}
-		return existe;
 	}
 	return false;
 }
@@ -61,46 +49,43 @@ bool masHermanos(int nivel, int alumnos, int s[]) {
 void retroceso(int &nivel, int s[]) {
 	s[nivel-1] = -1;
 	nivel--;
-	permutar = true;
 }
 
 void bt(int alumnos) {
 	for (int i = 0; i < alumnos; ++i)
 	{
-		permutaciones.push_back(i+1);
+		permutaciones.push_back(i);
 	}
 
 	int voa = -1; /* valor optimo actual */
-	int *soa = 0; /* Solucion optima actual */
+	int soa [alumnos];
 	int nivel = 1; /* Inicializa el nivel */
-	int s [alumnos] = {};
-	permutar = false;
+	int s [alumnos];
+	int temp;
 	for (int i = 0; i < alumnos; ++i)
 	{
 		s[i] = -1;
 	}
-	/*do {
-    std::cout << permutaciones[0] << ' ' << permutaciones[1] << ' ' << permutaciones[2] << ' ' << permutaciones[3] << '\n';
-  } while ( std::next_permutation(permutaciones.begin(), permutaciones.end()));*/
-	/*cout << permutaciones[0] << ' ' << permutaciones[1] << ' ' << permutaciones[2] << ' ' << permutaciones[3] << '\n';
-	generar(permutaciones);
-	cout << permutaciones[0] << ' ' << permutaciones[1] << ' ' << permutaciones[2] << ' ' << permutaciones[3] << '\n';
-	permutaciones.erase(permutaciones.begin());
-	cout << permutaciones[0] << ' ' << permutaciones[1] << ' ' << permutaciones[2] << ' ' << permutaciones[3] << '\n';
-	cout << permutaciones.size() << endl;
-	permutaciones.insert(permutaciones.begin(), 0);
-	cout << permutaciones[0] << ' ' << permutaciones[1] << ' ' << permutaciones[2] << ' ' << permutaciones[3] << '\n';
-	cout << permutaciones.size() << endl;
-	permutaciones.clear();*/
 
 	do {
 		generar(nivel,s);
 		if (solucion(nivel,alumnos)) {
-			for (int i = 0; i < alumnos; ++i)
+			temp=0;
+			int si = 0;
+			int sj = 0;
+			for (int i = 0; i < alumnos-1; i=i+2)
 			{
-				cout << s[i];
+				si = s[i];
+				sj = s[i+1];
+				temp += (amistad[si][sj]+amistad[sj][si])*(trabajo[si][sj]+trabajo[sj][si]);
 			}
-			cout << endl;
+			if (temp > voa) {
+				for (int i = 0; i < alumnos; ++i)
+				{
+					soa[i] = s[i];
+				}
+				voa = temp;
+			}
 		}
 		if (criterio(nivel,alumnos)) {
 			nivel++;
@@ -111,6 +96,17 @@ void bt(int alumnos) {
 		}
 	} while(nivel!=0);
 
+	cout << voa << endl;
+	for (int i = 0; i < alumnos; ++i)
+	{
+		if (i == 0) {
+			cout << soa[i];
+		} else {
+			cout << " " << soa[i];
+		}
+	}
+	cout << endl;
+
 	permutaciones.clear();
 
 }
@@ -119,40 +115,30 @@ void bt(int alumnos) {
 
 int main(int argc, char *argv[]) {
 
-
-	string txt;
-	txt = argv[1];
-	ifstream fichero;
-	fichero.open (txt.c_str() );
 	int num_casos;	
 	int alumnos;
-	fichero >> num_casos;
-	//cout << num_casos << endl;
+	cin >> num_casos;
 	for (int i = 0; i < num_casos; ++i) {
-		fichero >> alumnos;
-		//cout << alumnos << endl;
-		int amistad[alumnos][alumnos] = {};
-		int trabajo[alumnos][alumnos] = {};
+		cin >> alumnos;
+		//int amistad[alumnos][alumnos] = {};
+		//int trabajo[alumnos][alumnos] = {};
 		for (int j = 0; j < alumnos; ++j)
 		{
 			for (int k = 0; k < alumnos; ++k) {
 				if (k != j) {
-					fichero >> amistad[j][k];
+					cin >> amistad[j][k];
 				}
-				//cout << amistad[j][k];
 			}
-			//cout << endl;
 		}
 		for (int j = 0; j < alumnos; ++j)
 		{
 			for (int k = 0; k < alumnos; ++k) {
 				if (k != j) {
-					fichero >> trabajo[j][k];
+					cin >> trabajo[j][k];
 				}
-			//	cout << trabajo[j][k];
 			}
-			//cout << endl;
 		}
+
 		bt(alumnos);
 	}
 }
